@@ -177,6 +177,25 @@ body {
     width: 60%;
     margin: auto;
 }
+
+.logs {
+    font-size: 20px;
+    font-weight: 400;
+    text-align: center;
+    padding: 10px; /* Поля вокруг текста */
+    margin-top: 10px; /* Отступ снизу */
+    margin-bottom: 10px; /* Отступ снизу */
+    position: relative;
+    left: 32%;
+    width: 500px;
+    height: 300px;
+    min-width: 150px;
+    margin: 20px;
+    background-color: white;
+    overflow:hidden;
+    overflow-y: scroll;
+}
+
 .pokemon .details .hp .text {
     color: #666;
     display: inline-block;
