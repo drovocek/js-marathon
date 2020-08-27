@@ -1,92 +1,110 @@
 //participants
 const character = {
     type: 'character',
+    isLive: true,
     elHP: document.getElementById('health-character'),
     elProgressbar: document.getElementById('progressbar-character'),
     name: document.getElementById('name-character').innerText,
     actualHP: document.getElementById('health-character').innerText.split(' ')[0],
     maxHP: document.getElementById('health-character').innerText.split(' ')[2],
-    isLive: true,
+    addDamage: addDamage,
+    checkGameOver: checkGameOver,
+    showCharacter: showCharacter,
+    renderHPLife: renderHPLife,
+    renderProgressbarHP: renderProgressbarHP,
+    changeHPColor: changeHPColor,
+    getDamage: getDamage,
+    wakeUp: wakeUp,
+    paintAll: paintAll,
 }
 
 const enemy = {
     type: 'enemy',
+    isLive: true,
     elHP: document.getElementById('health-enemy'),
     elProgressbar: document.getElementById('progressbar-enemy'),
     name: document.getElementById('name-enemy').innerText,
     actualHP: document.getElementById('health-enemy').innerText.split(' ')[0],
     maxHP: document.getElementById('health-character').innerText.split(' ')[2],
-    isLive: true,
+    addDamage: addDamage,
+    checkGameOver: checkGameOver,
+    showCharacter: showCharacter,
+    renderHPLife: renderHPLife,
+    renderProgressbarHP: renderProgressbarHP,
+    changeHPColor: changeHPColor,
+    getDamage: getDamage,
+    wakeUp: wakeUp,
+    paintAll: paintAll,
 }
 
 
 //controller 1 - you get change
 const $btnThunder = document.getElementById('btn-thunder');
 $btnThunder.addEventListener('click', function gameIteration(){
-    checkGameOver();
     if(character.isLive && enemy.isLive){
-        addDamageByDice(true);
-        paintAllСhanges();
+        let dices = randomCeil(6);
+        if(dices > 3){
+            character.getDamage();
+            enemy.getDamage();
+        }
+        else{
+            enemy.getDamage();
+            character.getDamage();
+        }
     }
 });
 
 //controller 2 - you MAY NOT get change
 const $btnBlow = document.getElementById('btn-blow');
-$btnBlow.addEventListener('click', function(){
-    checkGameOver();
+$btnBlow.addEventListener('click', function gameIteration(){
     if(character.isLive && enemy.isLive){
-        addDamageByDice(false);
-        paintAllСhanges();
+        let dices = randomCeil(6);
+        if(dices < 3){
+            enemy.getDamage();
+        }
+        else{
+            character.getDamage();
+        }
     }
 });
 
+//controller 3 - restart
+const $btnRestart = document.getElementById('btn-restart');
+$btnRestart.addEventListener('click', function restart(){
+    character.wakeUp();
+    enemy.wakeUp();
+
+    $btnThunder.disable = false;
+    $btnBlow.disable = false;
+});
+
+//restore
+function wakeUp(){
+    this.actualHP = character.maxHP;
+    this.isLive = true;
+    this.paintAll();
+}
+
+function getDamage(){
+    this.addDamage(randomCeil(20));
+    this.checkGameOver();
+    this.paintAll();
+}
+
 //checker
 function checkGameOver(){
-    let winner = null;
-    if(character.isLive == false ){
-        winner = enemy;
-    }
-    else if(enemy.isLive == false) winner = character;
-
-    if(winner != null){
-        alert('Game over!\nThe winner is ' + winner.name);
+    if(this.actualHP == 0){
+        this.isLive = false;
+        let winnerName = (this.name == 'enemy')? 'character':'enemy';
+        alert('Game over!\nThe winner is ' + winnerName);
         $btnThunder.disable = true;
         $btnBlow.disable = true;
     }
 }
 
 //damage
-function addDamage(person, damage){
-    if(damage > person.actualHP){
-        person.isLive = false;
-        person.actualHP = 0;
-    }
-    else{
-        person.actualHP = person.actualHP - damage;
-    }
-}
-
-function addDamageByDice(isGetСhange){
-    let dices = randomCeil(6);
-    if(!isGetСhange){
-        let dices = randomCeil(6); // > 3 - is miss;
-        if(dices > 3){
-            addDamage(character, randomCeil(20));
-        }
-        else{
-            addDamage(enemy, randomCeil(20));
-        }
-    }
-    else{
-        if(dices > 3){
-            addDamage(character, randomCeil(20));
-            if(character.isLive) addDamage(enemy, randomCeil(20));
-        }
-        else{
-            addDamage(enemy, randomCeil(20));
-            if(enemy.isLive) addDamage(character, randomCeil(20));
-        }
-    }
+function addDamage(damage){
+    this.actualHP = (damage > this.actualHP)? 0 : (this.actualHP - damage);
 }
 
 //service
@@ -95,39 +113,32 @@ function randomCeil(num){
 }
 
 //paint
-function paintAllСhanges(){
-    paintPersonСhanges(enemy);
-    paintPersonСhanges(character);
+function paintAll(){
+    this.renderHPLife();
+    this.renderProgressbarHP();
+    this.changeHPColor();
 }
 
-function paintPersonСhanges(person){
-    renderHPLife(person);
-    renderProgressbarHP(person);
-    changeHPColor(person);
+function renderHPLife(){
+    console.log(this.elHP.innerText);
+    this.elHP.innerText = this.actualHP + ' / ' + this.maxHP;
 }
 
-function renderHPLife(person){
-    person.elHP.innerText = person.actualHP + ' / ' + person.maxHP;
+function renderProgressbarHP(){
+    let HP1 = this.maxHP/100;
+    this.elProgressbar.style.width = this.actualHP/HP1 + '%';
 }
 
-function renderProgressbarHP(person){
-    person.elProgressbar.style.width = person.actualHP + '%';
-}
-
-function changeHPColor(person){
-    let idBar = "progressbar-" + person.type;
-    let idHealth = "health-" + person.type;
-    let element = document.getElementById(idBar);
-    let healthArr = document.getElementById(idHealth).innerText.split(' ');
+function changeHPColor(){
+    let healthArr = this.elHP.innerText.split(' ');
     let pHPindicator = Math.ceil(healthArr[0]*100/healthArr[2]);
 
-    if(pHPindicator <= 25) element.style.background = '#d20000';
-    else if(pHPindicator <= 50) element.style.background = '#ffcc00';
+    if(pHPindicator <= 25) this.elProgressbar.style.background = '#d20000';
+    else if(pHPindicator <= 50) this.elProgressbar.style.background = '#ffcc00';
+    else if(pHPindicator <= 100) this.elProgressbar.style.background = '#8bf500';
  }
 
 //tests
-function showCharacter(person){
-    for (var key in person){
-        console.log(key + " : " + person[key]);
-    }
+function showCharacter(){
+        console.log(this.actualHP + " : " + this.maxHP);
 }
