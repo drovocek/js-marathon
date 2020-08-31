@@ -35,8 +35,8 @@ body {
 }
 
 .control {
-    width: 320px;
-    height: 260px;
+    width: 20%;
+    height: 200px;
     position: relative;
     margin: 20px;
     display: flex;
@@ -44,6 +44,7 @@ body {
     align-items: center;
     display: block;
 }
+
 
 .playground {
     max-width: 1024px;
@@ -186,7 +187,7 @@ body {
     margin-top: 10px; /* Отступ снизу */
     margin-bottom: 10px; /* Отступ снизу */
     position: relative;
-    left: 32%;
+    left: 36%;
     width: 500px;
     height: 300px;
     min-width: 150px;
@@ -194,6 +195,19 @@ body {
     background-color: white;
     overflow:hidden;
     overflow-y: scroll;
+    border-radius: 10px;
+}
+
+.control_setting{
+    width: 320px;
+    height: 260px;
+    position: relative;
+    left: 41%;
+    margin: 20px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    display: block;
 }
 
 .pokemon .details .hp .text {
@@ -287,8 +301,23 @@ body {
 
 .button {
     position: relative;
+    width: 95%;
     background: white;
     border: 2px solid #ffc55b;
+    border-radius: 10px;
+    min-height: 30px;
+    vertical-align: middle;
+    text-align: center;
+    padding: 12px 20px;
+    outline: none !important;
+    cursor: pointer;
+    font-size: 18px;
+
+}
+.button_setting {
+    position: relative;
+    background: lime;
+    border: 3.5px solid #00a3e2;
     border-radius: 10px;
     min-height: 30px;
     vertical-align: middle;
@@ -296,6 +325,7 @@ body {
     outline: none !important;
     cursor: pointer;
     font-size: 18px;
+    color: white;
 
 }
 .button:after {
@@ -491,4 +521,15 @@ h1 {
 
 .action label {
     padding: 6px 0;
+}
+#count {
+  width: 25px;
+  height: 25px;
+  -webkit-border-radius: 25px;
+  -moz-border-radius: 25px;
+  border-radius: 25px;
+  background: white;
+  float: right; /*Задаем обтекание*/
+  text-align: center;
+  font-weight: bold;
 }
