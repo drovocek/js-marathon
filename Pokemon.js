@@ -1,6 +1,8 @@
+
 class DomSelector{
     constructor(selector){
         this.selector = selector;
+        this.control= document.querySelector('.control');
         this.elHP = document.getElementById(`health-${selector}`);
         this.elProgressbar = document.getElementById(`progressbar-${selector}`);
         this.elName = document.getElementById(`name-${selector}`);
@@ -13,15 +15,16 @@ class DomSelector{
 }
 
 class Pokemon extends DomSelector{
-    constructor({selector}){
+    constructor({img, name, type, hp, attacks = [], selector, }){
         super(selector);
-        this.name = this.elName.innerText;
-        this.lastDamage = 0;
-        const docEl = this.elHP.innerText.split(' ');
+        this.img = img;
+        this.name = name;
+        this.type = type;
         this.hp ={
-             current: docEl[0],
-             max: docEl[2],
+             current: hp,
+             max: hp,
         };
+        this.attacks = attacks;
     }
 
     //paint
@@ -45,25 +48,9 @@ class Pokemon extends DomSelector{
         let pHPindicator = Math.ceil(healthArr[0]*100/healthArr[2]);
         let objBackground = this.elProgressbar.style.background;
 
-        if(pHPindicator <= 25) objBackground = '#d20000';
-        else if(pHPindicator <= 50) objBackground = '#ffcc00';
+        if(pHPindicator <= 20) objBackground = '#d20000';
+        else if(pHPindicator <= 60) objBackground = '#ffcc00';
         else if(pHPindicator <= 100) objBackground = '#8bf500';
-     }
-
-     //lastDamage
-     addDamage = (lastDamage) =>{
-         this.lastDamage = lastDamage;
-         let lives = this.hp.current - lastDamage;
-         this.hp.current = (lastDamage > this.hp.current)? 0 : (lives > 100)? 100: lives;
-     }
-
-     addHP = (num) =>{
-         this.addDamage(randomCeil(num));
-     }
-
-     //restore
-     restoreHP = () => {
-         this.hp.current = this.hp.max;
      }
 }
 
