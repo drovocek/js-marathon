@@ -1,96 +1,115 @@
 import Pokemon from ./pokemon.js;
 import {randomCeil, generateLog, addLogElement, showCharacterHP} from ./util.js;
+import {pokemons} from'./pokemons.js';
 
-const pl1 = new Pokemon({selector: 'character'});
-const pl2 = new Pokemon({selector: 'enemy'});
+let pl1;
+let pl2;
 
-//button 1 - you get change
-pl1.buttons[0].addEventListener('click', function gameIteration(){
-    thunderCounter();
-    let dices = randomCeil(6);
-    let firstDamaged = (dices > 3)? pl1 : pl2;
-    let secondDamaged = (dices > 3)? pl2 : pl1;
+function initGame(){
+    let somePokemon1 = selectCharacter();
+    pl1 = new Pokemon({
+        ...somePokemon1,
+        selector: 'player1'
+    });
 
-    firstDamaged.addDamage(randomCeil(20));
-    generateLog(firstDamaged);
-    firstDamaged.paintAll();
-    checkGameOver();
-    secondDamaged.addDamage(randomCeil(20));
-    generateLog(secondDamaged);
-    secondDamaged.paintAll();
-    checkGameOver();
-});
+    let somePokemon2 = selectCharacter();
+    pl2 = new Pokemon({
+        ...somePokemon2,
+        selector: 'player2'
+    });
 
-//button 2 - you MAY NOT get change
-pl1.buttons[1].addEventListener('click', function gameIteration(){
-    blowCounter();
-    let dices = randomCeil(6);
-    let firstDamaged = (dices > 2)? pl1 : pl2;
+    removeButtons();
+    addButtons();
+    addCharacters();
+}
 
-    firstDamaged.addDamage(randomCeil(30));
-    generateLog(firstDamaged);
-    firstDamaged.paintAll();
-    checkGameOver();
-});
+initGame();
 
-//button 3 - you MAY add many damage
-pl1.buttons[2].addEventListener('click', function gameIteration(){
-    headshotCounter();
-    let dices = randomCeil(6);
-    let firstDamaged = (dices > 2)? pl1 : pl2;
+//buttons
+function addButtons(){
+    pl1.attacks.forEach(
+        item =>{
+            const $btn = document.createElement('button');
+            $btn.classList.add('button');
+            const click = clickCounter(item.maxCount, $btn);
+            $btn.innerText = item.name + " " + item.maxCount;
+            $btn.addEventListener('click', function gameIteration(){
+                click();
+                if(randomCeil(6) > 3){
+                    addDamage(item);
+                    checkGameOver();
+                    generateLog(pl1);
+                    getDamage();
+                    generateLog(pl2)
+                }
+                else{
+                    getDamage();
+                    checkGameOver();
+                    generateLog(pl2);
+                    addDamage(item);
+                    generateLog(pl1)
+                };
+                pl1.paintAll();
+                pl2.paintAll();
+            })
+            pl1.control.appendChild($btn);
+        }
+    )
+}
 
-    firstDamaged.addDamage(randomCeil(40));
-    generateLog(firstDamaged);
-    firstDamaged.paintAll();
-    checkGameOver();
-});
+function removeButtons(){
+    const allButtons = document.querySelectorAll('.control .button');
+    allButtons.forEach($item => $item.remove());
+}
 
-//button 4 - you MAY NOT restorHP
-pl1.buttons[3].addEventListener('click', function gameIteration(){
-    restoreHPCounter();
-    let dices = randomCeil(6);
+//fill data
+function addCharacters(){
+    document.getElementById('name-player1').innerText = pl1.name;
+    document.getElementById('health-player1').innerText = pl1.hp.current + ' / ' + pl1.hp.max;
+    document.getElementById('sprite-player1').src= pl1.img;
+    document.getElementById('name-player2').innerText = pl2.name;
+    document.getElementById('health-player2').innerText = pl2.hp.current + ' / ' + pl2.hp.max;
+    document.getElementById('sprite-player2').src= pl2.img;
+}
 
-    if(dices > 3){
-        pl1.addHP(-40);
-        pl1.paintAll();
-    }
-    else{
-        pl1.addDamage(randomCeil(30));
-        generateLog(pl1);
-        pl1.paintAll();
-    }
-    checkGameOver();
-});
+function selectCharacter(){
+    const charNum = randomCeil(pokemons.length-1);
+    return pokemons[charNum];
+}
+
+//damage
+function addDamage(item){
+    let damage = (randomCeil(6) > 3)? item.maxDamage : item.minDamage;
+    let lives = pl2.hp.current - damage;
+    pl2.hp.current = (damage > pl2.hp.current)? 0 : (lives > pl2.hp.max)? pl2.hp.max: lives;
+}
+
+function getDamage(){
+    let item = pl2.attacks[randomCeil(3)];
+    let damage = (randomCeil(6) > 3)? item.maxDamage : item.minDamage;
+    let lives = pl1.hp.current - damage;
+    pl1.hp.current = (damage > pl1.hp.current)? 0 : (lives > pl1.hp.max)? pl1.hp.max: lives;
+}
 
 //controller_setting_1 - restart
 const $btnRestart = document.getElementById('btn-restart');
 $btnRestart.addEventListener('click', function restart(){
-    pl1.restoreHP();
-    pl2.restoreHP();
+    initGame();
     pl1.paintAll();
     pl2.paintAll();
-    allButtonDisable(false);
-    restoreButtonsCounter();
 });
 
 //click counter
-let thunderCounter = clickCounter(pl1.buttons[0]);
-let blowCounter = clickCounter(pl1.buttons[1]);
-let headshotCounter = clickCounter(pl1.buttons[2]);
-let restoreHPCounter = clickCounter(pl1.buttons[3]);
-
-function clickCounter(btnEl){
-    let maxCount = btnEl.innerText.replace(/[A-Z][a-z]*/g,'');
-    let currentCount = maxCount;
-    let btnName = btnEl.innerText.replace(/[0-9]*/g,"");
-
+function clickCounter(maxCount, btnEl){
+    let pushed = 0;
     return function(){
-        currentCount -= 1;
-        changeCount(btnEl, currentCount);
-        console.log(`${btnName}нажата ${maxCount - currentCount} раз.`);
-        if(currentCount == 0) btnEl.disabled = true;
-
-        return currentCount;
+        let btnName = btnEl.innerText.replace(/[0-9]*/g,"");
+        pushed++;
+        maxCount--;
+        changeCount(btnEl, maxCount);
+        console.log(`${btnName}нажата ${pushed} раз.`);
+        if(maxCount == 0) btnEl.disabled = true;
+        return maxCount;
     }
 }
 
@@ -98,17 +117,6 @@ function changeCount(btnEl, count){
      const btnName = btnEl.innerText.replace(/[0-9]*/g,"");
      btnEl.innerText = btnName + " " + count;
 }
-
- function restoreButtonsCounter(){
-     changeCount(pl1.buttons[0], pl1.buttonMaxCount[0]);
-     changeCount(pl1.buttons[1], pl1.buttonMaxCount[1]);
-     changeCount(pl1.buttons[2], pl1.buttonMaxCount[2]);
-     changeCount(pl1.buttons[3], pl1.buttonMaxCount[3]);
-     thunderCounter = clickCounter(pl1.buttons[0]);
-     blowCounter = clickCounter(pl1.buttons[1]);
-     headshotCounter = clickCounter(pl1.buttons[2]);
-     restoreHPCounter = clickCounter(pl1.buttons[3]);
- }
 
 //checker
 function checkGameOver(){
@@ -119,7 +127,6 @@ function checkGameOver(){
     else if(pl2.hp.current == 0){
         winnerName = pl1.name;
     }
-
     if(winnerName != "NoName" ){
         alert(`Game over!\nThe winner is ${winnerName}`);
         allButtonDisable(true);
